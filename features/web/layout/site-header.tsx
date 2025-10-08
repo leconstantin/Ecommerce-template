@@ -1,15 +1,14 @@
 // import CartModal from 'components/cart/modal';
 
-import { ShoppingCartIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import LogoSquare from "@/components/custom/logo-square";
-import { Button } from "@/components/ui/button";
 import MobileMenu from "@/features/web/layout/mobile-menu";
 import Search, { SearchSkeleton } from "@/features/web/layout/search";
 import { getMenu } from "@/shopify/index";
 import type { Menu } from "@/shopify/types";
+import { CartModal } from "../cart/modal";
 
 const { SITE_NAME } = process.env;
 
@@ -57,10 +56,7 @@ export async function SiteHeader() {
           </Suspense>
         </div>
         <div className="flex justify-end md:w-1/3">
-          {/* <CartModal /> */}
-          <Button size={"icon-lg"} variant={"outline"}>
-            <ShoppingCartIcon />
-          </Button>
+          <CartModal />
         </div>
       </div>
     </nav>
