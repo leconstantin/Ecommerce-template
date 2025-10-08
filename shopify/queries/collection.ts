@@ -1,4 +1,5 @@
 import productFragment from "../fragments/product";
+import seoFragment from "../fragments/seo";
 
 export const getCollectionProductsQuery = /* GraphQL */ `
   query getCollectionProducts(
@@ -17,4 +18,29 @@ export const getCollectionProductsQuery = /* GraphQL */ `
     }
   }
   ${productFragment}
+`;
+
+const collectionFragment = /* GraphQL */ `
+  fragment collection on Collection {
+    handle
+    title
+    description
+    seo {
+      ...seo
+    }
+    updatedAt
+  }
+  ${seoFragment}
+`;
+export const getCollectionsQuery = /* GraphQL */ `
+  query getCollections {
+    collections(first: 100, sortKey: TITLE) {
+      edges {
+        node {
+          ...collection
+        }
+      }
+    }
+  }
+  ${collectionFragment}
 `;
