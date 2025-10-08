@@ -3,7 +3,7 @@ import CarouselCards from "./carousel-cards";
 export async function HomeCarousel() {
   // Collections that start with `hidden-*` are hidden from the search page.
   const products = await getCollectionProducts({
-    collection: "home-carousel-products",
+    collection: "hidden-home-carousel-products",
   });
 
   if (!products?.length) return null;
