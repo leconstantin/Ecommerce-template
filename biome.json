@@ -21,6 +21,11 @@
       "suspicious": {
         "noUnknownAtRules": "off"
       },
+      "style": {
+        "noMagicNumbers": "off",
+        "useThrowOnlyError": "off",
+        "useBlockStatements": "off"
+      },
       "performance": {
         "noNamespaceImport": "off"
       }

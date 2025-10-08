@@ -4,8 +4,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "@/components/providers";
 
+const { SITE_NAME } = process.env;
 export const metadata: Metadata = {
-  title: "E-Shop website Template",
+  title: {
+    default: SITE_NAME ?? "",
+    template: `%s | ${SITE_NAME}`,
+  },
   description: "E-Shop website Template",
 };
 
