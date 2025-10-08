@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ThreeItemGrid } from "@/features/web/grid/three-items";
+import { HomeCarousel } from "@/features/web/home/home-carousel";
+import { ThreeItemGrid } from "@/features/web/home/three-item-grids";
 
 export const metadata: Metadata = {
   description:
@@ -14,8 +14,7 @@ export default function Home() {
   return (
     <>
       <ThreeItemGrid />
-      <p>web page</p>
-      <Link href="/dashboard"> dashboard</Link>
+      <HomeCarousel />
     </>
   );
 }
