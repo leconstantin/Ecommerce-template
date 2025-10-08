@@ -6,6 +6,7 @@ import {
 } from "./constants";
 import {
   getCollectionProductsQuery,
+  getCollectionQuery,
   getCollectionsQuery,
 } from "./queries/collection";
 import { getMenuQuery } from "./queries/menu";
@@ -18,6 +19,7 @@ import type {
   Menu,
   Product,
   ShopifyCollection,
+  ShopifyCollectionOperation,
   ShopifyCollectionProductsOperation,
   ShopifyCollectionsOperation,
   ShopifyMenuOperation,
@@ -247,6 +249,22 @@ export async function getCollections(): Promise<Collection[]> {
   ];
 
   return collections;
+}
+export async function getCollection(
+  handle: string
+): Promise<Collection | undefined> {
+  // 'use cache';
+  // cacheTag(TAGS.collections);
+  // cacheLife('days');
+
+  const res = await shopifyFetch<ShopifyCollectionOperation>({
+    query: getCollectionQuery,
+    variables: {
+      handle,
+    },
+  });
+
+  return reshapeCollection(res.body.data.collection);
 }
 
 export async function getProducts({
