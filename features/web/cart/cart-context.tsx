@@ -1,263 +1,190 @@
 "use client";
+import { createContext, useContext, useState } from "react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import type { Cart, CartItem, Product } from "@/shopify/types";
 
-import type React from "react";
-import {
-  createContext,
-  use,
-  useCallback,
-  useContext,
-  useMemo,
-  useOptimistic,
-} from "react";
-import type { Cart, CartItem, Product, ProductVariant } from "@/shopify/types";
-
-type UpdateType = "plus" | "minus" | "delete";
-
-type CartAction =
-  | {
-      type: "UPDATE_ITEM";
-      payload: { merchandiseId: string; updateType: UpdateType };
-    }
-  | {
-      type: "ADD_ITEM";
-      payload: { variant: ProductVariant; product: Product };
-    };
-
-type CartContextType = {
-  cartPromise: Promise<Cart | undefined>;
+type TShoppingCartContext = {
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
+  getItemQuantity: (product: Product) => number;
+  addItemToCart: (product: Product) => void;
+  increaseCartQuantity: (item: CartItem) => void;
+  decreaseCartQuantity: (item: CartItem) => void;
+  removeFromCart: (item: CartItem) => void;
+  cartQuantity: number;
+  cart: Cart;
 };
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+const ShoppingCartContext = createContext({} as TShoppingCartContext);
 
-function calculateItemCost(quantity: number, price: string): string {
-  return (Number(price) * quantity).toString();
+export function useShoppingCart() {
+  return useContext(ShoppingCartContext);
 }
 
-function updateCartItem(
-  item: CartItem,
-  updateType: UpdateType
-): CartItem | null {
-  if (updateType === "delete") return null;
-
-  const newQuantity =
-    updateType === "plus" ? item.quantity + 1 : item.quantity - 1;
-  if (newQuantity === 0) return null;
-
-  const singleItemAmount = Number(item.cost.totalAmount.amount) / item.quantity;
-  const newTotalAmount = calculateItemCost(
-    newQuantity,
-    singleItemAmount.toString()
-  );
-
-  return {
-    ...item,
-    quantity: newQuantity,
-    cost: {
-      ...item.cost,
-      totalAmount: {
-        ...item.cost.totalAmount,
-        amount: newTotalAmount,
-      },
-    },
-  };
-}
-
-function createOrUpdateCartItem(
-  existingItem: CartItem | undefined,
-  variant: ProductVariant,
-  product: Product
-): CartItem {
-  const quantity = existingItem ? existingItem.quantity + 1 : 1;
-  const totalAmount = calculateItemCost(quantity, variant.price.amount);
-
-  return {
-    id: existingItem?.id,
-    quantity,
-    cost: {
-      totalAmount: {
-        amount: totalAmount,
-        currencyCode: variant.price.currencyCode,
-      },
-    },
-    merchandise: {
-      id: variant.id,
-      title: variant.title,
-      selectedOptions: variant.selectedOptions,
-      product: {
-        id: product.id,
-        handle: product.handle,
-        title: product.title,
-        featuredImage: product.featuredImage,
-      },
-    },
-  };
-}
-
-function updateCartTotals(
-  lines: CartItem[]
-): Pick<Cart, "totalQuantity" | "cost"> {
-  const totalQuantity = lines.reduce((sum, item) => sum + item.quantity, 0);
-  const totalAmount = lines.reduce(
-    (sum, item) => sum + Number(item.cost.totalAmount.amount),
-    0
-  );
-  const currencyCode = lines[0]?.cost.totalAmount.currencyCode ?? "USD";
-
-  return {
-    totalQuantity,
-    cost: {
-      subtotalAmount: { amount: totalAmount.toString(), currencyCode },
-      totalAmount: { amount: totalAmount.toString(), currencyCode },
-      totalTaxAmount: { amount: "0", currencyCode },
-    },
-  };
-}
-
-function createEmptyCart(): Cart {
-  return {
+export function ShoppingCartProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [cart, setCart] = useLocalStorage<Cart>("shopping-cart", {
     id: undefined,
     checkoutUrl: "",
-    totalQuantity: 0,
-    lines: [],
     cost: {
       subtotalAmount: { amount: "0", currencyCode: "USD" },
       totalAmount: { amount: "0", currencyCode: "USD" },
       totalTaxAmount: { amount: "0", currencyCode: "USD" },
     },
-  };
-}
+    lines: [],
+    totalQuantity: 0,
+  });
 
-function cartReducer(state: Cart | undefined, action: CartAction): Cart {
-  const currentCart = state || createEmptyCart();
+  const [isOpen, setIsOpen] = useState(false);
 
-  switch (action.type) {
-    case "UPDATE_ITEM": {
-      const { merchandiseId, updateType } = action.payload;
-      const updatedLines = currentCart.lines
-        .map((item) =>
-          item.merchandise.id === merchandiseId
-            ? updateCartItem(item, updateType)
-            : item
-        )
-        .filter(Boolean) as CartItem[];
+  const openCart = () => setIsOpen(true);
+  const closeCart = () => setIsOpen(false);
 
-      if (updatedLines.length === 0) {
-        return {
-          ...currentCart,
-          lines: [],
-          totalQuantity: 0,
-          cost: {
-            ...currentCart.cost,
-            totalAmount: { ...currentCart.cost.totalAmount, amount: "0" },
-          },
-        };
-      }
+  /** 🧮 Get quantity of a product in cart */
+  function getItemQuantity(product: Product) {
+    return (
+      cart.lines.find((item) => item.merchandise.product.id === product.id)
+        ?.quantity || 0
+    );
+  }
 
-      return {
-        ...currentCart,
-        ...updateCartTotals(updatedLines),
-        lines: updatedLines,
-      };
-    }
-    case "ADD_ITEM": {
-      const { variant, product } = action.payload;
-      const existingItem = currentCart.lines.find(
-        (item) => item.merchandise.id === variant.id
+  /** ➕ Add or increase a product in cart */
+  function addItemToCart(product: Product) {
+    setIsOpen(true);
+    setCart((currCart) => {
+      const existingItem = currCart.lines.find(
+        (item) => item.merchandise.product.id === product.id
       );
 
-      // If item exists, increment quantity
+      let updatedLines: CartItem[];
+
       if (existingItem) {
-        const updatedItem = {
-          ...existingItem,
-          quantity: existingItem.quantity + 1,
+        updatedLines = currCart.lines.map((item) =>
+          item.merchandise.product.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        const newItem: CartItem = {
+          id: product.id,
+          quantity: 1,
           cost: {
-            ...existingItem.cost,
             totalAmount: {
-              ...existingItem.cost.totalAmount,
-              amount: (
-                Number(existingItem.cost.totalAmount.amount) +
-                Number(variant.price.amount)
-              ).toString(),
+              amount: product.priceRange.minVariantPrice.amount,
+              currencyCode: product.priceRange.minVariantPrice.currencyCode,
+            },
+          },
+          merchandise: {
+            id: product.variants[0]?.id || crypto.randomUUID(),
+            title: product.variants[0]?.title || product.title,
+            selectedOptions: product.variants[0]?.selectedOptions || [],
+            product: {
+              id: product.id,
+              handle: product.handle,
+              title: product.title,
+              featuredImage: product.featuredImage,
             },
           },
         };
 
-        const updatedLines = currentCart.lines.map((item) =>
-          item.merchandise.id === variant.id ? updatedItem : item
-        );
-
-        return {
-          ...currentCart,
-          ...updateCartTotals(updatedLines),
-          lines: updatedLines,
-        };
+        updatedLines = [...currCart.lines, newItem];
       }
 
-      // Add new item
-      const updatedItem = createOrUpdateCartItem(undefined, variant, product);
+      return {
+        ...currCart,
+        lines: updatedLines,
+        totalQuantity: updatedLines.reduce((t, i) => t + i.quantity, 0),
+      };
+    });
+  }
 
-      const updatedLines = [...currentCart.lines, updatedItem];
+  function increaseCartQuantity(item: CartItem) {
+    setCart((currCart) => {
+      const existingItem = currCart.lines.find(
+        (line) => line.merchandise.product.id === item.merchandise.product.id
+      );
+
+      if (!existingItem) return currCart;
+
+      const updatedLines = currCart.lines.map((line) =>
+        line.merchandise.product.id === item.merchandise.product.id
+          ? { ...line, quantity: line.quantity + 1 }
+          : line
+      );
 
       return {
-        ...currentCart,
-        ...updateCartTotals(updatedLines),
+        ...currCart,
         lines: updatedLines,
+        totalQuantity: updatedLines.reduce((t, i) => t + i.quantity, 0),
       };
-    }
-    default:
-      return currentCart;
+    });
   }
-}
 
-export function CartProvider({
-  children,
-  cartPromise,
-}: {
-  children: React.ReactNode;
-  cartPromise: Promise<Cart | undefined>;
-}) {
+  /** ➖ Decrease quantity or remove product */
+  function decreaseCartQuantity(item: CartItem) {
+    setCart((currCart) => {
+      const existingItem = currCart.lines.find(
+        (line) => line.merchandise.product.id === item.merchandise.product.id
+      );
+
+      if (!existingItem) return currCart;
+
+      let updatedLines: CartItem[];
+
+      if (existingItem.quantity === 1) {
+        updatedLines = currCart.lines.filter(
+          (line) => line.merchandise.product.id !== item.merchandise.product.id
+        );
+      } else {
+        updatedLines = currCart.lines.map((line) =>
+          line.merchandise.product.id === item.merchandise.product.id
+            ? { ...line, quantity: line.quantity - 1 }
+            : line
+        );
+      }
+
+      return {
+        ...currCart,
+        lines: updatedLines,
+        totalQuantity: updatedLines.reduce((t, i) => t + i.quantity, 0),
+      };
+    });
+  }
+
+  /** ❌ Remove product completely */
+  function removeFromCart(item: CartItem) {
+    setCart((currCart) => {
+      const updatedLines = currCart.lines.filter(
+        (line) => line.merchandise.product.id !== item.merchandise.product.id
+      );
+      return {
+        ...currCart,
+        lines: updatedLines,
+        totalQuantity: updatedLines.reduce((t, i) => t + i.quantity, 0),
+      };
+    });
+  }
+
   return (
-    <CartContext.Provider value={{ cartPromise }}>
+    <ShoppingCartContext.Provider
+      value={{
+        isOpen,
+        openCart,
+        closeCart,
+        getItemQuantity,
+        addItemToCart,
+        increaseCartQuantity,
+        decreaseCartQuantity,
+        removeFromCart,
+        cartQuantity: cart.totalQuantity,
+        cart,
+      }}
+    >
       {children}
-    </CartContext.Provider>
-  );
-}
-
-export function useCart() {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-
-  const initialCart = use(context.cartPromise);
-  const [optimisticCart, updateOptimisticCart] = useOptimistic(
-    initialCart,
-    cartReducer
-  );
-
-  const updateCartItemCallback = useCallback(
-    (merchandiseId: string, updateType: UpdateType) => {
-      updateOptimisticCart({
-        type: "UPDATE_ITEM",
-        payload: { merchandiseId, updateType },
-      });
-    },
-    [updateOptimisticCart]
-  );
-
-  const addCartItem = useCallback(
-    (variant: ProductVariant, product: Product) => {
-      updateOptimisticCart({ type: "ADD_ITEM", payload: { variant, product } });
-    },
-    [updateOptimisticCart]
-  );
-
-  return useMemo(
-    () => ({
-      cart: optimisticCart,
-      updateCartItem: updateCartItemCallback,
-      addCartItem,
-    }),
-    [optimisticCart, updateCartItemCallback, addCartItem]
+    </ShoppingCartContext.Provider>
   );
 }

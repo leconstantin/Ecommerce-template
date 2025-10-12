@@ -2,18 +2,18 @@
 
 import clsx from "clsx";
 import { PlusIcon } from "lucide-react";
-import { useActionState } from "react";
 import type { Product, ProductVariant } from "@/shopify/types";
 import { useProduct } from "../product/product-context";
-import { addItem } from "./actions";
-import { useCart } from "./cart-context";
+import { useShoppingCart } from "./cart-context";
 
 function SubmitButton({
   availableForSale,
   selectedVariantId,
+  onClick,
 }: {
   availableForSale: boolean;
   selectedVariantId: string | undefined;
+  onClick: () => void;
 }) {
   const buttonClasses =
     "relative flex w-full items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
@@ -53,6 +53,7 @@ function SubmitButton({
       className={clsx(buttonClasses, {
         "hover:opacity-90": true,
       })}
+      onClick={onClick}
       type="button"
     >
       <div className="absolute left-0 ml-4">
@@ -65,9 +66,15 @@ function SubmitButton({
 
 export function AddToCart({ product }: { product: Product }) {
   const { variants, availableForSale } = product;
-  const { addCartItem } = useCart();
+  const { openCart, addItemToCart } = useShoppingCart();
+
+  const handleAddToCart = () => {
+    addItemToCart(product);
+    openCart();
+  };
+  // const { addCartItem } = useCart();
   const { state } = useProduct();
-  const [message, formAction] = useActionState(addItem, null);
+  // const [message, formAction] = useActionState(addItem, null);
 
   const variant = variants.find((v: ProductVariant) =>
     v.selectedOptions.every(
@@ -76,27 +83,25 @@ export function AddToCart({ product }: { product: Product }) {
   );
   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
   const selectedVariantId = variant?.id || defaultVariantId;
-  const actionWithVariant = formAction.bind(null, selectedVariantId);
-  const finalVariant = variants.find((v) => v.id === selectedVariantId);
+  // const actionWithVariant = formAction.bind(null, selectedVariantId);
+  // const finalVariant = variants.find((v) => v.id === selectedVariantId);
 
-  const handleSubmit = async () => {
-    // First, update the optimistic cart
-    if (finalVariant) {
-      addCartItem(finalVariant, product);
-    }
-    // Then execute the server action
-    await actionWithVariant();
-  };
+  // const handleSubmit = async () => {
+  //   // First, update the optimistic cart
+  //   if (finalVariant) {
+  //     addCartItem(finalVariant, product);
+  //   }
+  //   // Then execute the server action
+  //   await actionWithVariant();
+  // };
 
   return (
-    <form action={handleSubmit}>
+    <form>
       <SubmitButton
         availableForSale={availableForSale}
+        onClick={handleAddToCart}
         selectedVariantId={selectedVariantId}
       />
-      <p aria-live="polite" className="sr-only">
-        {message}
-      </p>
     </form>
   );
 }
