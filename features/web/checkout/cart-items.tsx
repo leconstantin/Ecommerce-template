@@ -9,7 +9,7 @@ import { useShoppingCart } from "../cart/cart-context";
 export default function CheckoutCartItems() {
   const { cart, cartQuantity } = useShoppingCart();
   return (
-    <section className="sticky top-2 h-fit w-full max-w-xl p-9">
+    <section className="sticky top-2 hidden h-fit w-full max-w-xl p-9 lg:block">
       <div className="mb-6 flex flex-col gap-5">
         {cart.lines.map((item) => (
           <li className="list-none" key={item.id}>

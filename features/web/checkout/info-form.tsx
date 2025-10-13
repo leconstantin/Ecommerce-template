@@ -80,7 +80,7 @@ export function InfoForm() {
             name="email_phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xl tracking-tight">
+                <FormLabel className="font-bold text-xl tracking-tight">
                   Contact
                 </FormLabel>
                 <FormControl>
@@ -119,7 +119,7 @@ export function InfoForm() {
             name="country"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xl tracking-tight">
+                <FormLabel className="font-bold text-xl tracking-tight">
                   Shipping address
                 </FormLabel>
                 <Select
@@ -144,7 +144,7 @@ export function InfoForm() {
               </FormItem>
             )}
           />
-          <div className="flex w-full items-center gap-3">
+          <div className="flex w-full flex-col items-center gap-3 md:flex-row">
             <FormField
               control={form.control}
               name="first_name"
@@ -207,7 +207,7 @@ export function InfoForm() {
               </FormItem>
             )}
           />
-          <div className="flex w-full items-center gap-3">
+          <div className="flex w-full flex-col items-center gap-3 md:flex-row">
             <FormField
               control={form.control}
               name="city"
