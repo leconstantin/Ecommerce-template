@@ -1,7 +1,9 @@
 "use client";
+
+import type React from "react";
 import { createContext, useContext, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import type { Cart, CartItem, Product } from "@/shopify/types";
+import type { Cart, CartItem, Product, ProductVariant } from "@/shopify/types";
 
 type TShoppingCartContext = {
   isOpen: boolean;
@@ -22,6 +24,52 @@ export function useShoppingCart() {
   return useContext(ShoppingCartContext);
 }
 
+/** 🧮 Helper to calculate totals for the whole cart */
+function updateCartTotals(
+  lines: CartItem[]
+): Pick<Cart, "totalQuantity" | "cost"> {
+  const totalQuantity = lines.reduce((sum, item) => sum + item.quantity, 0);
+  const totalAmount = lines.reduce(
+    (sum, item) => sum + Number(item.cost.totalAmount.amount),
+    0
+  );
+  const currencyCode = lines[0]?.cost.totalAmount.currencyCode ?? "USD";
+
+  return {
+    totalQuantity,
+    cost: {
+      subtotalAmount: { amount: totalAmount.toString(), currencyCode },
+      totalAmount: { amount: totalAmount.toString(), currencyCode },
+      totalTaxAmount: { amount: "0", currencyCode },
+    },
+  };
+}
+
+/** 🆕 Helper to create a new CartItem */
+function createCartItem(product: Product, variant: ProductVariant): CartItem {
+  return {
+    id: variant.id,
+    quantity: 1,
+    cost: {
+      totalAmount: {
+        amount: variant.price.amount,
+        currencyCode: variant.price.currencyCode,
+      },
+    },
+    merchandise: {
+      id: variant.id,
+      title: variant.title,
+      selectedOptions: variant.selectedOptions,
+      product: {
+        id: product.id,
+        handle: product.handle,
+        title: product.title,
+        featuredImage: product.featuredImage,
+      },
+    },
+  };
+}
+
 export function ShoppingCartProvider({
   children,
 }: {
@@ -30,17 +78,16 @@ export function ShoppingCartProvider({
   const [cart, setCart] = useLocalStorage<Cart>("shopping-cart", {
     id: undefined,
     checkoutUrl: "",
+    lines: [],
+    totalQuantity: 0,
     cost: {
       subtotalAmount: { amount: "0", currencyCode: "USD" },
       totalAmount: { amount: "0", currencyCode: "USD" },
       totalTaxAmount: { amount: "0", currencyCode: "USD" },
     },
-    lines: [],
-    totalQuantity: 0,
   });
 
   const [isOpen, setIsOpen] = useState(false);
-
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
 
@@ -52,140 +99,155 @@ export function ShoppingCartProvider({
     );
   }
 
-  /** ➕ Add or increase a product in cart */
+  /** ➕ Add or increase product in cart */
   function addItemToCart(product: Product) {
+    const variant = product.variants[0]; // Simplify: use first variant
+    if (!variant) return;
+
     setIsOpen(true);
     setCart((currCart) => {
       const existingItem = currCart.lines.find(
-        (item) => item.merchandise.product.id === product.id
+        (item) => item.merchandise.id === variant.id
       );
 
       let updatedLines: CartItem[];
 
       if (existingItem) {
-        updatedLines = currCart.lines.map((item) =>
-          item.merchandise.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        const newItem: CartItem = {
-          id: product.id,
-          quantity: 1,
+        // Update quantity and cost for existing item
+        const updatedItem = {
+          ...existingItem,
+          quantity: existingItem.quantity + 1,
           cost: {
+            ...existingItem.cost,
             totalAmount: {
-              amount: product.priceRange.maxVariantPrice.amount,
-              currencyCode: product.priceRange.maxVariantPrice.currencyCode,
-            },
-          },
-          merchandise: {
-            id: product.variants[0]?.id || crypto.randomUUID(),
-            title: product.variants[0]?.title || product.title,
-            selectedOptions: product.variants[0]?.selectedOptions || [],
-            product: {
-              id: product.id,
-              handle: product.handle,
-              title: product.title,
-              featuredImage: product.featuredImage,
+              ...existingItem.cost.totalAmount,
+              amount: (
+                Number(existingItem.cost.totalAmount.amount) +
+                Number(variant.price.amount)
+              ).toString(),
             },
           },
         };
 
+        updatedLines = currCart.lines.map((item) =>
+          item.merchandise.id === variant.id ? updatedItem : item
+        );
+      } else {
+        // Add new item
+        const newItem = createCartItem(product, variant);
         updatedLines = [...currCart.lines, newItem];
       }
-      const totals = updateCartTotals(updatedLines);
 
-      return {
-        ...currCart,
-        lines: updatedLines,
-        ...totals,
-      };
+      if (updatedLines.length === 0) {
+        return {
+          ...currCart,
+          lines: [],
+          totalQuantity: 0,
+          cost: {
+            subtotalAmount: { amount: "0", currencyCode: "USD" },
+            totalAmount: { amount: "0", currencyCode: "USD" },
+            totalTaxAmount: { amount: "0", currencyCode: "USD" },
+          },
+        };
+      }
+
+      const totals = updateCartTotals(updatedLines);
+      return { ...currCart, lines: updatedLines, ...totals };
     });
   }
 
+  /** ⬆️ Increase quantity */
   function increaseCartQuantity(item: CartItem) {
     setCart((currCart) => {
-      const existingItem = currCart.lines.find(
-        (line) => line.merchandise.product.id === item.merchandise.product.id
-      );
-
-      if (!existingItem) return currCart;
-
       const updatedLines = currCart.lines.map((line) =>
-        line.merchandise.product.id === item.merchandise.product.id
-          ? { ...line, quantity: line.quantity + 1 }
+        line.merchandise.id === item.merchandise.id
+          ? {
+              ...line,
+              quantity: line.quantity + 1,
+              cost: {
+                ...line.cost,
+                totalAmount: {
+                  ...line.cost.totalAmount,
+                  amount: (
+                    Number(line.cost.totalAmount.amount) +
+                    Number(line.cost.totalAmount.amount) / line.quantity
+                  ).toString(),
+                },
+              },
+            }
           : line
       );
-      return {
-        ...currCart,
-        lines: updatedLines,
-        totalQuantity: updatedLines.reduce((t, i) => t + i.quantity, 0),
-      };
+
+      const totals = updateCartTotals(updatedLines);
+      return { ...currCart, lines: updatedLines, ...totals };
     });
   }
 
-  /** ➖ Decrease quantity or remove product */
+  /** ⬇️ Decrease quantity or remove */
+
   function decreaseCartQuantity(item: CartItem) {
     setCart((currCart) => {
       const existingItem = currCart.lines.find(
-        (line) => line.merchandise.product.id === item.merchandise.product.id
+        (line) => line.merchandise.id === item.merchandise.id
       );
-
       if (!existingItem) return currCart;
 
       let updatedLines: CartItem[];
 
       if (existingItem.quantity === 1) {
         updatedLines = currCart.lines.filter(
-          (line) => line.merchandise.product.id !== item.merchandise.product.id
+          (line) => line.merchandise.id !== item.merchandise.id
         );
       } else {
+        const singleItemPrice =
+          Number(existingItem.cost.totalAmount.amount) / existingItem.quantity;
         updatedLines = currCart.lines.map((line) =>
-          line.merchandise.product.id === item.merchandise.product.id
-            ? { ...line, quantity: line.quantity - 1 }
+          line.merchandise.id === item.merchandise.id
+            ? {
+                ...line,
+                quantity: line.quantity - 1,
+                cost: {
+                  ...line.cost,
+                  totalAmount: {
+                    ...line.cost.totalAmount,
+                    amount: (
+                      Number(line.cost.totalAmount.amount) - singleItemPrice
+                    ).toString(),
+                  },
+                },
+              }
             : line
         );
       }
 
-      return {
-        ...currCart,
-        lines: updatedLines,
-        totalQuantity: updatedLines.reduce((t, i) => t + i.quantity, 0),
-      };
+      if (updatedLines.length === 0) {
+        return {
+          ...currCart,
+          lines: [],
+          totalQuantity: 0,
+          cost: {
+            subtotalAmount: { amount: "0", currencyCode: "USD" },
+            totalAmount: { amount: "0", currencyCode: "USD" },
+            totalTaxAmount: { amount: "0", currencyCode: "USD" },
+          },
+        };
+      }
+
+      const totals = updateCartTotals(updatedLines);
+      return { ...currCart, lines: updatedLines, ...totals };
     });
   }
 
-  /** ❌ Remove product completely */
+  /** ❌ Remove item completely */
   function removeFromCart(item: CartItem) {
     setCart((currCart) => {
       const updatedLines = currCart.lines.filter(
-        (line) => line.merchandise.product.id !== item.merchandise.product.id
+        (line) => line.merchandise.id !== item.merchandise.id
       );
-      return {
-        ...currCart,
-        lines: updatedLines,
-        totalQuantity: updatedLines.reduce((t, i) => t + i.quantity, 0),
-      };
-    });
-  }
 
-  function updateCartTotals(
-    lines: CartItem[]
-  ): Pick<Cart, "totalQuantity" | "cost"> {
-    const totalQuantity = lines.reduce((sum, item) => sum + item.quantity, 0);
-    const totalAmount = lines.reduce(
-      (sum, item) => sum + Number(item.cost.totalAmount.amount),
-      0
-    );
-    const currencyCode = lines[0]?.cost.totalAmount.currencyCode ?? "USD";
-    return {
-      totalQuantity,
-      cost: {
-        subtotalAmount: { amount: totalAmount.toString(), currencyCode },
-        totalAmount: { amount: totalAmount.toString(), currencyCode },
-        totalTaxAmount: { amount: "0", currencyCode },
-      },
-    };
+      const totals = updateCartTotals(updatedLines);
+      return { ...currCart, lines: updatedLines, ...totals };
+    });
   }
 
   return (
@@ -199,7 +261,6 @@ export function ShoppingCartProvider({
         increaseCartQuantity,
         decreaseCartQuantity,
         removeFromCart,
-
         cartQuantity: cart.totalQuantity,
         cart,
       }}

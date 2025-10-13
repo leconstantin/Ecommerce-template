@@ -3,6 +3,7 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { createUrl } from "@/lib/utils";
+import { DEFAULT_OPTION } from "@/shopify/constants";
 import type { CartItem } from "@/shopify/types";
 import Price from "../_components/price";
 import { DeleteItemButton } from "./delete-item-button";
@@ -19,8 +20,6 @@ export default function CartItemSummary({ item }: { item: CartItem }) {
     `/product/${item.merchandise.product.handle}`,
     new URLSearchParams(merchandiseSearchParams)
   );
-  const unitPrice = Number(item.cost.totalAmount.amount);
-  const price = (Number.isFinite(unitPrice) ? unitPrice : 0) * item.quantity;
   return (
     <li className="flex w-full flex-col border-neutral-300 border-b dark:border-neutral-700">
       <div className="relative flex w-full flex-row justify-between px-1 py-4">
@@ -49,15 +48,17 @@ export default function CartItemSummary({ item }: { item: CartItem }) {
                 {" "}
                 {item.merchandise.product.title}
               </span>
-              <p className="text-neutral-500 text-sm dark:text-neutral-400">
-                Black & White
-              </p>
+              {item.merchandise.title !== DEFAULT_OPTION ? (
+                <p className="text-neutral-500 text-sm dark:text-neutral-400">
+                  {item.merchandise.title}
+                </p>
+              ) : null}
             </div>
           </Link>
         </div>
         <div className="flex h-16 flex-col justify-between">
           <Price
-            amount={price.toString()}
+            amount={item.cost.totalAmount.amount}
             className="flex justify-end space-y-2 text-right text-sm"
             currencyCode={item.cost.totalAmount.currencyCode}
           />
