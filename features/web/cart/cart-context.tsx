@@ -10,7 +10,7 @@ type TShoppingCartContext = {
   openCart: () => void;
   closeCart: () => void;
   getItemQuantity: (product: Product) => number;
-  addItemToCart: (product: Product) => void;
+  addCartItem: (product: Product, variant: ProductVariant) => void;
   increaseCartQuantity: (item: CartItem) => void;
   decreaseCartQuantity: (item: CartItem) => void;
   removeFromCart: (item: CartItem) => void;
@@ -100,8 +100,7 @@ export function ShoppingCartProvider({
   }
 
   /** ➕ Add or increase product in cart */
-  function addItemToCart(product: Product) {
-    const variant = product.variants[0]; // Simplify: use first variant
+  function addCartItem(product: Product, variant: ProductVariant) {
     if (!variant) return;
 
     setIsOpen(true);
@@ -257,7 +256,7 @@ export function ShoppingCartProvider({
         openCart,
         closeCart,
         getItemQuantity,
-        addItemToCart,
+        addCartItem,
         increaseCartQuantity,
         decreaseCartQuantity,
         removeFromCart,

@@ -18,7 +18,7 @@ function PathFilterItem({ item }: { item: PathFilterItemType }) {
   newParams.delete("q");
 
   return (
-    <li className="mt-2 flex text-black dark:text-white" key={item.title}>
+    <li className="mt-2 text-left text-black dark:text-white" key={item.title}>
       <DynamicTag
         className={clsx(
           "w-full text-sm underline-offset-4 hover:underline dark:hover:text-neutral-100",
@@ -50,7 +50,7 @@ function SortFilterItem({ item }: { item: SortFilterItemType }) {
 
   return (
     <li
-      className="mt-2 flex text-black text-sm dark:text-white"
+      className="mt-2 text-left text-black text-sm dark:text-white"
       key={item.title}
     >
       <DynamicTag

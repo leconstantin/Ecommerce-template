@@ -92,7 +92,7 @@ export function CartModal() {
                 />
               </div>
             </div>
-            <SheetFooter>
+            <SheetFooter className="pb-0">
               <form>
                 <CheckoutButton />
               </form>

@@ -22,52 +22,9 @@ export function Gallery({
     "h-full px-6 transition-all cursor-pointer ease-in-out hover:scale-110 hover:text-black dark:hover:text-white flex items-center justify-center";
 
   return (
-    <form>
-      <div className="relative aspect-square h-full max-h-[550px] w-full overflow-hidden">
-        {images[imageIndex] && (
-          <Image
-            alt={images[imageIndex]?.altText as string}
-            className="h-full w-full object-contain"
-            fill
-            priority={true}
-            sizes="(min-width: 1024px) 66vw, 100vw"
-            src={images[imageIndex]?.src as string}
-          />
-        )}
-
-        {images.length > 1 ? (
-          <div className="absolute bottom-[15%] flex w-full justify-center">
-            <div className="mx-auto flex h-11 items-center rounded-full border border-white bg-neutral-50/80 text-neutral-500 backdrop-blur-sm dark:border-black dark:bg-neutral-900/80">
-              <button
-                aria-label="Previous product image"
-                className={buttonClassName}
-                formAction={() => {
-                  const newState = updateImage(previousImageIndex.toString());
-                  updateUrl(newState);
-                }}
-                type="submit"
-              >
-                <ArrowLeftIcon className="h-5" />
-              </button>
-              <div className="mx-1 h-6 w-px bg-neutral-500" />
-              <button
-                aria-label="Next product image"
-                className={buttonClassName}
-                formAction={() => {
-                  const newState = updateImage(nextImageIndex.toString());
-                  updateUrl(newState);
-                }}
-                type="submit"
-              >
-                <ArrowRightIcon className="h-5" />
-              </button>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
+    <form className="flex flex-col-reverse items-center md:flex-row">
       {images.length > 1 ? (
-        <ul className="overflow-none my-12 flex flex-wrap items-center justify-center gap-2 py-1 lg:mb-0">
+        <ul className="overflow-none mt-12 mb-12 flex flex-wrap items-center justify-center gap-2 py-1 md:flex-col lg:mb-0">
           {images.map((image, index) => {
             const isActive = index === imageIndex;
 
@@ -95,6 +52,48 @@ export function Gallery({
           })}
         </ul>
       ) : null}
+      <div className="relative aspect-square h-full max-h-[550px] w-full overflow-hidden">
+        {images[imageIndex] && (
+          <Image
+            alt={images[imageIndex]?.altText as string}
+            className="h-full w-full object-contain"
+            fill
+            priority={true}
+            sizes="(min-width: 1024px) 66vw, 100vw"
+            src={images[imageIndex]?.src as string}
+          />
+        )}
+
+        {images.length > 1 ? (
+          <div className="absolute bottom-[0%] flex w-full justify-center md:bottom-[15%]">
+            <div className="mx-auto flex h-10 items-center rounded-full border border-white bg-neutral-50/80 text-neutral-500 backdrop-blur-sm md:h-11 dark:border-black dark:bg-neutral-900/80">
+              <button
+                aria-label="Previous product image"
+                className={buttonClassName}
+                formAction={() => {
+                  const newState = updateImage(previousImageIndex.toString());
+                  updateUrl(newState);
+                }}
+                type="submit"
+              >
+                <ArrowLeftIcon className="h-5" />
+              </button>
+              <div className="mx-1 h-6 w-px bg-neutral-500" />
+              <button
+                aria-label="Next product image"
+                className={buttonClassName}
+                formAction={() => {
+                  const newState = updateImage(nextImageIndex.toString());
+                  updateUrl(newState);
+                }}
+                type="submit"
+              >
+                <ArrowRightIcon className="h-5" />
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </form>
   );
 }

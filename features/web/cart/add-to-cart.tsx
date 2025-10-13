@@ -66,15 +66,8 @@ function SubmitButton({
 
 export function AddToCart({ product }: { product: Product }) {
   const { variants, availableForSale } = product;
-  const { openCart, addItemToCart } = useShoppingCart();
-
-  const handleAddToCart = () => {
-    addItemToCart(product);
-    openCart();
-  };
-  // const { addCartItem } = useCart();
+  const { openCart, addCartItem } = useShoppingCart();
   const { state } = useProduct();
-  // const [message, formAction] = useActionState(addItem, null);
 
   const variant = variants.find((v: ProductVariant) =>
     v.selectedOptions.every(
@@ -83,17 +76,13 @@ export function AddToCart({ product }: { product: Product }) {
   );
   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
   const selectedVariantId = variant?.id || defaultVariantId;
-  // const actionWithVariant = formAction.bind(null, selectedVariantId);
-  // const finalVariant = variants.find((v) => v.id === selectedVariantId);
-
-  // const handleSubmit = async () => {
-  //   // First, update the optimistic cart
-  //   if (finalVariant) {
-  //     addCartItem(finalVariant, product);
-  //   }
-  //   // Then execute the server action
-  //   await actionWithVariant();
-  // };
+  const finalVariant = variants.find((v) => v.id === selectedVariantId);
+  const handleAddToCart = () => {
+    if (finalVariant) {
+      addCartItem(product, finalVariant);
+    }
+    openCart();
+  };
 
   return (
     <form>

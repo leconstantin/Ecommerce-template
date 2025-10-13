@@ -4,13 +4,14 @@ import { SearchIcon } from "lucide-react";
 import Form from "next/form";
 import { useSearchParams } from "next/navigation";
 
-export default function Search() {
+export default function Search({ onSubmit }: { onSubmit?: () => void }) {
   const searchParams = useSearchParams();
 
   return (
     <Form
       action="/search"
       className="relative w-full w-max-[550px] lg:w-80 xl:w-full"
+      onSubmit={onSubmit}
     >
       <input
         autoComplete="off"

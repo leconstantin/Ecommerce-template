@@ -1,7 +1,8 @@
+"use client";
 import { MenuIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -19,8 +20,9 @@ import Search, { SearchSkeleton } from "./search";
 const { SITE_NAME } = process.env;
 
 export default function MobileMenu({ menu }: { menu: Menu[] }) {
+  const [open, setOpen] = useState(false);
   return (
-    <Sheet>
+    <Sheet onOpenChange={setOpen} open={open}>
       <SheetTrigger asChild>
         <Button size={"icon-lg"} variant={"outline"}>
           <MenuIcon />
@@ -36,7 +38,7 @@ export default function MobileMenu({ menu }: { menu: Menu[] }) {
         </SheetHeader>
         <div className="w-full p-4">
           <Suspense fallback={<SearchSkeleton />}>
-            <Search />
+            <Search onSubmit={() => setOpen(false)} />
           </Suspense>
         </div>
         <div className="grid flex-1 auto-rows-min gap-6 px-4">

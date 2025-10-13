@@ -11,7 +11,7 @@ export function DeleteItemButton({ item }: { item: CartItem }) {
     <div>
       <button
         aria-label="Remove cart item"
-        className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500"
+        className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded-full bg-neutral-500 hover:bg-neutral-600 dark:bg-neutral-400 dark:hover:bg-neutral-300"
         onClick={() => removeFromCart(item)}
         type="button"
       >
