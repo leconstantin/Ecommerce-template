@@ -26,10 +26,6 @@ export function CartModal() {
   // Use the context-controlled `isOpen` so external callers (like ItemCard)
   // which call `openCart()` will correctly open the Sheet.
   const open = isOpen;
-  const total = 100;
-  //   tax is 18% on each item
-  const tax = total * 0.18;
-  const grandTotal = total + tax;
 
   return (
     <Sheet
@@ -78,9 +74,9 @@ export function CartModal() {
               <div className="mb-3 flex items-center justify-between border-neutral-200 border-b pb-1 dark:border-neutral-700">
                 <p>Taxes</p>
                 <Price
-                  amount={tax.toString()}
+                  amount={cart.cost.totalTaxAmount.amount}
                   className="text-right text-base text-black dark:text-white"
-                  currencyCode={"USD"}
+                  currencyCode={cart.cost.totalTaxAmount.currencyCode}
                 />
               </div>
               <div className="mb-3 flex items-center justify-between border-neutral-200 border-b pt-1 pb-1 dark:border-neutral-700">
@@ -90,9 +86,9 @@ export function CartModal() {
               <div className="mb-3 flex items-center justify-between border-neutral-200 border-b pt-1 pb-1 dark:border-neutral-700">
                 <p>Total</p>
                 <Price
-                  amount={grandTotal.toString()}
+                  amount={cart.cost.totalAmount.amount}
                   className="text-right text-base text-black dark:text-white"
-                  currencyCode={"USD"}
+                  currencyCode={cart.cost.totalAmount.currencyCode}
                 />
               </div>
             </div>

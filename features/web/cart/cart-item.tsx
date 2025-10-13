@@ -19,7 +19,8 @@ export default function CartItemSummary({ item }: { item: CartItem }) {
     `/product/${item.merchandise.product.handle}`,
     new URLSearchParams(merchandiseSearchParams)
   );
-
+  const unitPrice = Number(item.cost.totalAmount.amount);
+  const price = (Number.isFinite(unitPrice) ? unitPrice : 0) * item.quantity;
   return (
     <li className="flex w-full flex-col border-neutral-300 border-b dark:border-neutral-700">
       <div className="relative flex w-full flex-row justify-between px-1 py-4">
@@ -56,7 +57,7 @@ export default function CartItemSummary({ item }: { item: CartItem }) {
         </div>
         <div className="flex h-16 flex-col justify-between">
           <Price
-            amount={item.cost.totalAmount.amount}
+            amount={price.toString()}
             className="flex justify-end space-y-2 text-right text-sm"
             currencyCode={item.cost.totalAmount.currencyCode}
           />

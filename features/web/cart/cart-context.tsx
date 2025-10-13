@@ -74,8 +74,8 @@ export function ShoppingCartProvider({
           quantity: 1,
           cost: {
             totalAmount: {
-              amount: product.priceRange.minVariantPrice.amount,
-              currencyCode: product.priceRange.minVariantPrice.currencyCode,
+              amount: product.priceRange.maxVariantPrice.amount,
+              currencyCode: product.priceRange.maxVariantPrice.currencyCode,
             },
           },
           merchandise: {
@@ -93,11 +93,12 @@ export function ShoppingCartProvider({
 
         updatedLines = [...currCart.lines, newItem];
       }
+      const totals = updateCartTotals(updatedLines);
 
       return {
         ...currCart,
         lines: updatedLines,
-        totalQuantity: updatedLines.reduce((t, i) => t + i.quantity, 0),
+        ...totals,
       };
     });
   }
@@ -115,7 +116,6 @@ export function ShoppingCartProvider({
           ? { ...line, quantity: line.quantity + 1 }
           : line
       );
-
       return {
         ...currCart,
         lines: updatedLines,
@@ -169,6 +169,25 @@ export function ShoppingCartProvider({
     });
   }
 
+  function updateCartTotals(
+    lines: CartItem[]
+  ): Pick<Cart, "totalQuantity" | "cost"> {
+    const totalQuantity = lines.reduce((sum, item) => sum + item.quantity, 0);
+    const totalAmount = lines.reduce(
+      (sum, item) => sum + Number(item.cost.totalAmount.amount),
+      0
+    );
+    const currencyCode = lines[0]?.cost.totalAmount.currencyCode ?? "USD";
+    return {
+      totalQuantity,
+      cost: {
+        subtotalAmount: { amount: totalAmount.toString(), currencyCode },
+        totalAmount: { amount: totalAmount.toString(), currencyCode },
+        totalTaxAmount: { amount: "0", currencyCode },
+      },
+    };
+  }
+
   return (
     <ShoppingCartContext.Provider
       value={{
@@ -180,6 +199,7 @@ export function ShoppingCartProvider({
         increaseCartQuantity,
         decreaseCartQuantity,
         removeFromCart,
+
         cartQuantity: cart.totalQuantity,
         cart,
       }}
