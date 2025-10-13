@@ -1,7 +1,7 @@
 "use client";
 
 import { ShoppingCartIcon } from "lucide-react";
-import { useFormStatus } from "react-dom";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,14 +15,12 @@ import {
 import Price from "../_components/price";
 import { useShoppingCart } from "./cart-context";
 import CartItemSummary from "./cart-item";
-import LoadingDots from "./loading-dots";
 
 export type MerchandiseSearchParams = {
   [key: string]: string;
 };
 export function CartModal() {
   const { cartQuantity, cart, openCart, closeCart, isOpen } = useShoppingCart();
-  const quantity = cartQuantity;
   // Use the context-controlled `isOpen` so external callers (like ItemCard)
   // which call `openCart()` will correctly open the Sheet.
   const open = isOpen;
@@ -42,9 +40,9 @@ export function CartModal() {
       <SheetTrigger asChild>
         <Button className="relative" size={"icon-lg"} variant={"outline"}>
           <ShoppingCartIcon />
-          {quantity ? (
+          {cartQuantity ? (
             <div className="-mr-2 -mt-2 absolute top-0 right-0 h-4 w-4 rounded-sm bg-blue-600 font-medium text-[11px] text-white">
-              {quantity}
+              {cartQuantity}
             </div>
           ) : null}
         </Button>
@@ -93,27 +91,18 @@ export function CartModal() {
               </div>
             </div>
             <SheetFooter className="pb-0">
-              <form>
-                <CheckoutButton />
-              </form>
+              <Button
+                asChild
+                className="block w-full rounded-full bg-blue-600 p-3 text-center font-medium text-sm text-white opacity-90 hover:bg-blue-700 hover:opacity-100"
+                onClick={closeCart}
+                size={"lg"}
+              >
+                <Link href="/checkout/information">Proceed to Checkout</Link>
+              </Button>
             </SheetFooter>
           </div>
         )}
       </SheetContent>
     </Sheet>
-  );
-}
-
-export function CheckoutButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <button
-      className="block w-full rounded-full bg-blue-600 p-3 text-center font-medium text-sm text-white opacity-90 hover:opacity-100"
-      disabled={pending}
-      type="submit"
-    >
-      {pending ? <LoadingDots className="bg-white" /> : "Proceed to Checkout"}
-    </button>
   );
 }

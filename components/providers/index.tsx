@@ -2,6 +2,7 @@
 
 import { AppProgressProvider } from "@bprogress/next";
 import type React from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { ShoppingCartProvider } from "@/features/web/cart/cart-context";
 import { ThemeProvider } from "./theme-provider";
 
@@ -21,6 +22,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           options={{ showSpinner: false }}
         >
           {children}
+          <Toaster />
         </AppProgressProvider>
       </ShoppingCartProvider>
     </ThemeProvider>
