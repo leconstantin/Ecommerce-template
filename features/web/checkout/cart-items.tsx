@@ -49,6 +49,7 @@ export default function CheckoutCartItems() {
                 amount={item.cost.totalAmount.amount}
                 className="flex justify-end space-y-2 text-right text-sm"
                 currencyCode={item.cost.totalAmount.currencyCode}
+                currencyCodeClassName="sr-only"
               />
             </div>
           </li>
@@ -65,6 +66,7 @@ export default function CheckoutCartItems() {
             amount={cart.cost.totalAmount.amount}
             className="text-right text-base"
             currencyCode={cart.cost.totalAmount.currencyCode}
+            currencyCodeClassName="sr-only"
           />
         </div>
         <div className="flex items-center justify-between">
@@ -74,6 +76,7 @@ export default function CheckoutCartItems() {
               amount={shipping.amount.toString()}
               className="text-right text-base"
               currencyCode={cart.cost.totalAmount.currencyCode}
+              currencyCodeClassName="sr-only"
             />
           ) : (
             <p className="text-muted-foreground">Calculated at next step</p>
@@ -86,6 +89,7 @@ export default function CheckoutCartItems() {
           amount={total.toString()}
           className="text-right font-bold text-lg"
           currencyCode={cart.cost.totalAmount.currencyCode}
+          currencyCodeClassName="sr-only"
         />
       </div>
     </section>
