@@ -30,7 +30,7 @@ const stats = [
   },
   {
     title: "Total Revenue",
-    value: "18",
+    value: "180,000 RWF",
     trend: "+12.5%",
     trendIcon: TrendingUpIcon,
     trendType: "up",
