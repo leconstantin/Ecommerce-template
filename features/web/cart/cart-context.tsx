@@ -5,6 +5,10 @@ import { createContext, useContext, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import type { Cart, CartItem, Product, ProductVariant } from "@/shopify/types";
 
+type TShipping = {
+  type: string;
+  amount: number;
+};
 type TShoppingCartContext = {
   isOpen: boolean;
   openCart: () => void;
@@ -15,10 +19,7 @@ type TShoppingCartContext = {
   decreaseCartQuantity: (item: CartItem) => void;
   removeFromCart: (item: CartItem) => void;
   cartQuantity: number;
-  shipping: {
-    type: string;
-    amount: number;
-  };
+  shipping: TShipping;
   setShippingAmount: (type: string, amount: number) => void;
   cart: Cart;
 };
@@ -93,10 +94,7 @@ export function ShoppingCartProvider({
   });
 
   const [isOpen, setIsOpen] = useState(false);
-  const [shipping, setShipping] = useState<{
-    type: string;
-    amount: number;
-  }>({
+  const [shipping, setShipping] = useLocalStorage<TShipping>("shipping", {
     type: "",
     amount: 0,
   });

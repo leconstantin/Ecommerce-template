@@ -46,7 +46,10 @@ export default function ShipPrice() {
         Shipping Method
       </h3>
 
-      <RadioGroup className="grid gap-3" defaultValue="economy">
+      <RadioGroup
+        className="grid gap-3"
+        defaultValue={shipping.type.toLowerCase()}
+      >
         {shippingOptions.map((option) => (
           <Label
             className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border p-3 hover:bg-accent/50 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950"
@@ -56,6 +59,7 @@ export default function ShipPrice() {
           >
             <div className="flex items-start gap-3">
               <RadioGroupItem
+                checked={shipping.type.toLowerCase() === option.id}
                 className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
                 id={option.id}
                 value={option.id}

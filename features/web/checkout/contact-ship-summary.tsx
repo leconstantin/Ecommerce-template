@@ -19,6 +19,7 @@ type Props = {
   shipping?: Shipping;
   onChangeContact?: () => void; // opens contact modal / page
   onChangeShipping?: () => void; // opens shipping modal / page
+  onChangeMehod?: () => void;
 };
 
 export default function ContactShipSummary({
@@ -27,6 +28,7 @@ export default function ContactShipSummary({
   shipping,
   onChangeContact,
   onChangeShipping,
+  onChangeMehod,
 }: Props) {
   const formattedAddress = `${address.city}, ${address.state} ${address.zip}${
     address.country ? `, ${address.country}` : ""
@@ -89,7 +91,7 @@ export default function ContactShipSummary({
           <Button
             aria-label="Change shipping address"
             className="text-blue-500"
-            onClick={onChangeShipping}
+            onClick={onChangeMehod}
             variant={"link"}
           >
             Change

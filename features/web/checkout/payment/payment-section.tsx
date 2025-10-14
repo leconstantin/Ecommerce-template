@@ -20,6 +20,7 @@ export default function CheckoutPaymentSection() {
         }}
         email="icon69184@gmail.com"
         onChangeContact={() => router.push("/checkout/information")}
+        onChangeMehod={() => router.push("/checkout/shipping")}
         onChangeShipping={() => router.push("/checkout/information")}
         shipping={{
           type: shipping.type,
