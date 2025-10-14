@@ -15,6 +15,11 @@ type TShoppingCartContext = {
   decreaseCartQuantity: (item: CartItem) => void;
   removeFromCart: (item: CartItem) => void;
   cartQuantity: number;
+  shipping: {
+    type: string;
+    amount: number;
+  };
+  setShippingAmount: (type: string, amount: number) => void;
   cart: Cart;
 };
 
@@ -88,6 +93,13 @@ export function ShoppingCartProvider({
   });
 
   const [isOpen, setIsOpen] = useState(false);
+  const [shipping, setShipping] = useState<{
+    type: string;
+    amount: number;
+  }>({
+    type: "",
+    amount: 0,
+  });
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
 
@@ -261,6 +273,10 @@ export function ShoppingCartProvider({
         decreaseCartQuantity,
         removeFromCart,
         cartQuantity: cart.totalQuantity,
+        shipping,
+        setShippingAmount(type, amount) {
+          setShipping({ type, amount });
+        },
         cart,
       }}
     >

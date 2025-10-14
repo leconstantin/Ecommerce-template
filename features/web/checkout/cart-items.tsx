@@ -7,7 +7,8 @@ import Price from "../_components/price";
 import { useShoppingCart } from "../cart/cart-context";
 
 export default function CheckoutCartItems() {
-  const { cart, cartQuantity } = useShoppingCart();
+  const { cart, cartQuantity, shipping } = useShoppingCart();
+  const total = Number(cart.cost.totalAmount.amount) + shipping.amount;
   return (
     <section className="sticky top-2 hidden h-fit w-full max-w-xl p-9 lg:block">
       <div className="mb-6 flex flex-col gap-5">
@@ -68,13 +69,21 @@ export default function CheckoutCartItems() {
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center">Shipping</div>
-          <p className="text-muted-foreground">Calculated at next step</p>
+          {shipping.amount > 0 ? (
+            <Price
+              amount={shipping.amount.toString()}
+              className="text-right text-base"
+              currencyCode={cart.cost.totalAmount.currencyCode}
+            />
+          ) : (
+            <p className="text-muted-foreground">Calculated at next step</p>
+          )}
         </div>
       </div>
       <div className="flex items-center justify-between">
         <p className="font-bold text-lg">Total</p>
         <Price
-          amount={cart.cost.totalAmount.amount}
+          amount={total.toString()}
           className="text-right font-bold text-lg"
           currencyCode={cart.cost.totalAmount.currencyCode}
         />
