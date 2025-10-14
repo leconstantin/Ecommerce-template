@@ -1,11 +1,11 @@
 "use client";
 
 import { AppProgressProvider } from "@bprogress/next";
+import { Analytics } from "@vercel/analytics/next";
 import type React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ShoppingCartProvider } from "@/features/web/cart/cart-context";
 import { ThemeProvider } from "./theme-provider";
-
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
@@ -25,6 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <Toaster />
         </AppProgressProvider>
       </ShoppingCartProvider>
+      <Analytics />
     </ThemeProvider>
   );
 }
