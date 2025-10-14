@@ -51,7 +51,7 @@ export function NavUser() {
   const user = {
     username: "rathon",
     name: "Rathon Store",
-    email: "m@example.com",
+    email: "rathon-store@gmail.com",
     avatarUrl: "/profile.svg",
   };
 

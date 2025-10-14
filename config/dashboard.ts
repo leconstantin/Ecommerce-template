@@ -28,11 +28,7 @@ export const dashboardNavs = {
       url: "/products",
       icon: UtensilsCrossedIcon,
     },
-    {
-      title: "About",
-      url: "/about",
-      icon: InfoIcon,
-    },
+
     {
       title: "Analytics",
       url: "/analytics",
@@ -42,6 +38,11 @@ export const dashboardNavs = {
       title: "Activity",
       url: "/activity",
       icon: ListIcon,
+    },
+    {
+      title: "About",
+      url: "/about",
+      icon: InfoIcon,
     },
     {
       title: "Trash",

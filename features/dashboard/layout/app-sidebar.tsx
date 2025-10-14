@@ -1,8 +1,8 @@
 "use client";
 
-import { ChefHatIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type * as React from "react";
+import LogoIcon from "@/components/icons/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -29,10 +29,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5 [&>svg]:size-6"
             >
               <a href="/">
-                <ChefHatIcon />
-                <span className="font-semibold font-serif text-base">
-                  KFC Restaurant
-                </span>
+                <LogoIcon />
+                <span className="font-semibold text-base">Rathon Store</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
