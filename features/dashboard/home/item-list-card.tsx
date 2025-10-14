@@ -1,9 +1,6 @@
 import { format } from "date-fns";
-import {
-  FilePenLineIcon,
-  HandbagIcon,
-  UtensilsCrossedIcon,
-} from "lucide-react";
+import { FilePenLineIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ItemCardActions } from "./item-card-actions";
@@ -16,14 +13,26 @@ export default function ItemListCard() {
       )}
     >
       <div className="mr-24 flex min-w-0 flex-row items-center gap-4 xl:mr-0 xl:w-[calc(25%+48px)]">
-        <UtensilsCrossedIcon className="size-6 shrink-0 text-muted-foreground" />
+        <Image
+          alt="product image"
+          className="hidden aspect-square size-10 rounded-sm dark:block"
+          height={40}
+          src="/shirt-white.avif"
+          width={40}
+        />
+        <Image
+          alt="product image"
+          className="aspect-square size-10 rounded-sm dark:hidden"
+          height={40}
+          src="/shirt-black.avif"
+          width={40}
+        />
         <div className="flex flex-col gap-0.5">
           <Link className="font-medium text-sm" href="/">
-            Coffee and tea
+            Acme Drawstring Bag
           </Link>
           <div className="flex items-center gap-1">
-            <HandbagIcon className="size-4 text-muted-foreground" />
-            <p className="text-muted-foreground text-sm">Beverages</p>
+            <p className="text-muted-foreground text-sm">White / Short</p>
           </div>
         </div>
       </div>

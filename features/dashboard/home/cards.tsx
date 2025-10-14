@@ -26,7 +26,7 @@ const stats = [
     trendIcon: TrendingDownIcon,
     trendType: "down",
     summary: "Fewer customers",
-    note: "Number of services booked",
+    note: "Customers who bought products",
   },
   {
     title: "Total Revenue",
@@ -38,13 +38,13 @@ const stats = [
     note: "Includes all orders placed",
   },
   {
-    title: "Total Items",
+    title: "Total Products",
     value: "20",
     trend: "+4.5%",
     trendIcon: TrendingUpIcon,
     trendType: "up",
     summary: "More items",
-    note: "Number of items in the menu",
+    note: "Number of products in the store",
   },
 ];
 
