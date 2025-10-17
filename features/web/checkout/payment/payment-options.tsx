@@ -1,6 +1,7 @@
 import { BanknoteXIcon, ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PaymentForm } from "./payment-form";
 
 export default function PaymentOPtions() {
   return (
@@ -13,24 +14,14 @@ export default function PaymentOPtions() {
           All transactions are secure and encrypted.
         </p>
       </div>
+      {false &&
       <div className="flex min-h-56 flex-col items-center justify-center gap-5 rounded-lg bg-muted p-6">
         <BanknoteXIcon className="size-10 text-muted-foreground" />
         <p className="text-muted-foreground text-sm tracking-tight">
           This store can&apos;t accept payments right now.
         </p>
-      </div>
-
-      <div className="flex w-full justify-between">
-        <Button asChild size="lg" variant={"link"}>
-          <Link href="/checkout/shipping">
-            <ChevronLeftIcon />
-            Return to Shipping
-          </Link>
-        </Button>
-        <Button disabled size="lg" type="submit">
-          Pay
-        </Button>
-      </div>
+      </div>}
+      <PaymentForm/>
     </section>
   );
 }
